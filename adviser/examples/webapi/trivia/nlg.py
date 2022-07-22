@@ -52,7 +52,7 @@ class TriviaNLG(HandcraftedNLG):
     def publish_system_utterance(
         self, sys_acts: List[SysAct] = None
     ) -> dict(sys_utterance=str):
-        message = '\n'.join(
+        message = ' '.join(
             [self.generate_system_utterance(sys_act) for sys_act in sys_acts]
         )
         return {'sys_utterance': message}

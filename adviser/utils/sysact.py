@@ -36,10 +36,15 @@ class SysActionType(Enum):
     Bad = 'bad'
     Bye = 'closingmsg'
     ConfirmRequest = 'confreq'
-    TellQuestion = 'tell_question'
+    TellNextQuestion = 'tell_next_question'
     TellFirstQuestion = 'tell_first_question'
     Customize = 'customize'
     TellEnd = 'tell_end'
+    TellAnswerOptions = 'tell_answer_options'
+    TellGivenAnswer = 'tell_given_answer'
+    TellCorrectAnswer = 'tell_correct_answer'
+    TellPreviousQuestion = 'tell_previous_question'
+    TellScore = 'tell_score'
 
 
 class SysAct(object):

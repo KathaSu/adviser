@@ -37,8 +37,8 @@ class TriviaPolicy(Service):
         elif UserActionType.Deny in beliefstate["user_acts"]:
             self.domain.level = 'easy'
             self.domain.quiztype = 'boolean'
-            self.domain.category = 'science'
-            self.domain.length = '5'
+            self.domain.category = 'general'
+            self.domain.length = 'infinity'
         else:
             constraints = beliefstate['informs']
             if constraints:
@@ -83,171 +83,155 @@ class TriviaPolicy(Service):
                         })
                     ]
                 }
-        
-        prev_correct_answer = self.domain.correct_answer
 
-        self.domain.find_entities(beliefstate["informs"])
-
-        if not beliefstate['requests']:
+        if beliefstate['requests'] == 'score':
+            tell_score = SysAct(
+                SysActionType.TellScore, slot_values={
+                    'count': "None" if self.domain.count == 0 else str(self.domain.count),
+                    'score': str(self.domain.score),
+                    'length': 'infinity' if self.domain.length == 'infinity' else 'number',
+                }
+            )
+            tell_previous_question = SysAct(
+                SysActionType.TellPreviousQuestion, slot_values={
+                    'quiztype': self.domain.quiztype,
+                    'question': self.domain.question
+                }
+            )                
             if self.domain.quiztype == 'boolean':
                 return {
-                    'sys_acts': [
-                        SysAct(SysActionType.TellFirstQuestion, slot_values={
-                            'question': self.domain.question,
-                            'quiztype': 'boolean',
-                            'a': None,
-                            'b': None,
-                            'c': None,
-                            'd': None
-                        })
-                    ]
+                    'sys_acts': [tell_score, tell_previous_question]
                 }
             else:
                 possible_answers = self.domain.correct_answer | self.domain.incorrect_answers
+                tell_answer_options = SysAct(
+                    SysActionType.TellAnswerOptions, slot_values={
+                        'a': possible_answers['a'],
+                        'b': possible_answers['b'],
+                        'c': possible_answers['c'],
+                        'd': possible_answers['d']
+                    }
+                )
                 return {
                     'sys_acts': [
-                        SysAct(SysActionType.TellFirstQuestion, slot_values={
-                            'question': self.domain.question,
-                            'quiztype': 'multiple',
-                            'a': possible_answers['a'],
-                            'b': possible_answers['b'],
-                            'c': possible_answers['c'],
-                            'd': possible_answers['d']
-                        })
+                        tell_score,
+                        tell_previous_question,
+                        tell_answer_options
                     ]
                 }
+
+        prev_correct_answer = self.domain.correct_answer
+        self.domain.find_entities(beliefstate["informs"])
+
+        tell_first_question = SysAct(
+            SysActionType.TellFirstQuestion, slot_values={
+                'question': self.domain.question,
+                'quiztype': self.domain.quiztype,
+            }
+        )
+        if self.domain.quiztype == 'multiple':
+            possible_answers = self.domain.correct_answer | self.domain.incorrect_answers
+            tell_answer_options = SysAct(
+                SysActionType.TellAnswerOptions, slot_values={
+                    'a': possible_answers['a'],
+                    'b': possible_answers['b'],
+                    'c': possible_answers['c'],
+                    'd': possible_answers['d']
+                }
+            )
         
+        if not beliefstate['requests']:
+            self.domain.count += 1
+            if self.domain.quiztype == 'boolean':
+                return {
+                    'sys_acts': [tell_first_question]
+                }
+            else:
+                return {
+                    'sys_acts': [tell_first_question, tell_answer_options]
+                }
+            
+
         if self.domain.quiztype == 'boolean':
-            is_correct = True if bool(beliefstate['requests']) == prev_correct_answer else False
+            is_correct = True if beliefstate['requests'] == str(prev_correct_answer) else False
         else:
             is_correct = True if beliefstate['requests'] in prev_correct_answer else False
+        correct_text = 'correct' if is_correct else 'incorrect'
+        correct_answer_text = [
+            f'{key.capitalize()}) {value}' for key, value in prev_correct_answer.items()
+        ][0] if not is_correct and self.domain.quiztype == 'multiple' else "None"
+
+        tell_given_answer = SysAct(
+            SysActionType.TellGivenAnswer, slot_values={
+                'given_answer': correct_text,
+            }
+        )
+        tell_correct_answer = SysAct(
+            SysActionType.TellCorrectAnswer, slot_values={
+                'correct_answer': correct_answer_text,
+            }
+        )
+        tell_next_question = SysAct(
+            SysActionType.TellNextQuestion, slot_values={
+                'question': self.domain.question,
+                'quiztype': self.domain.quiztype,
+            }
+        )
+        tell_end = SysAct(
+            SysActionType.TellEnd, slot_values={
+                'quiztype': self.domain.quiztype,
+                'length': 'infinity' if self.domain.length == 'infinity' else 'number',
+                'score': str(self.domain.score),
+                'count': str(self.domain.count),
+            }
+        )
 
         try:
             int(self.domain.length)
         except ValueError:
+            self.domain.count += 1
             if is_correct:
                 if self.domain.quiztype == "boolean":
                     return {
-                        "sys_acts" : [
-                            SysAct(SysActionType.TellQuestion, slot_values={
-                                'question': self.domain.question,
-                                'given_answer': None,
-                                'quiztype': 'boolean',
-                                'length': 'infinity',
-                                'a': None,
-                                'b': None,
-                                'c': None,
-                                'd': None
-                            })
-                        ]
+                        "sys_acts" : [tell_next_question]
                     }
                 else:
                     return {
-                        "sys_acts" : [
-                            SysAct(SysActionType.TellQuestion, slot_values={
-                                'question': self.domain.question,
-                                'given_answer': None,
-                                'quiztype': 'multiple',
-                                'length': 'infinity',
-                                'a': possible_answers['a'],
-                                'b': possible_answers['b'],
-                                'c': possible_answers['c'],
-                                'd': possible_answers['d']
-                            })
-                        ]
+                        "sys_acts" : [tell_next_question, tell_answer_options]
                     }
             else:
-                if self.domain.quiztype == "boolean":
-                    return {
-                        "sys_acts": [
-                            SysAct(SysActionType.TellEnd, slot_values={
-                                'quiztype': 'boolean',
-                                'given_answer': None,
-                                'correct_answer': None,
-                                'length': 'infinity',
-                                'score': str(self.domain.score),
-                                'count': str(self.domain.count),
-                            })
-                        ]
-                    }
-                else:
-                    return {
-                        "sys_acts": [
-                            SysAct(SysActionType.TellEnd, slot_values={
-                                'quiztype': 'multiple',
-                                'given_answer': None,
-                                'correct_answer': None,
-                                'length': 'infinity',
-                                'score': str(self.domain.score),
-                                'count': str(self.domain.count),
-                            })
-                        ]
-                    }       
+                return {
+                    "sys_acts": [tell_end]
+                }
         else:
-            if self.domain.count < int(self.domain.length):
+            self.domain.count += 1
+            if self.domain.count <= int(self.domain.length):
                 self.domain.score += 1 if is_correct else 0
                 if self.domain.quiztype == "boolean":
                     return {
-                        "sys_acts" : [
-                            SysAct(SysActionType.TellQuestion, slot_values={
-                                'question': self.domain.question,
-                                'given_answer': 'correct' if is_correct else 'incorrect',
-                                'correct_answer': None,
-                                'quiztype': 'boolean',
-                                'length': 'number',
-                                'a': None,
-                                'b': None,
-                                'c': None,
-                                'd': None
-                            })
-                        ]
+                        "sys_acts" : [tell_given_answer, tell_next_question]
                     }
                 else:
-                    possible_answers = self.domain.correct_answer | self.domain.incorrect_answers
+                    
                     return {
                         "sys_acts" : [
-                            SysAct(SysActionType.TellQuestion, slot_values={
-                                'question': self.domain.question,
-                                'given_answer': 'correct' if is_correct else 'incorrect',
-                                'quiztype': 'multiple',
-                                'length': 'number',
-                                'correct_answer': [
-                                    f'{key.capitalize()}) {value}' for key, value in prev_correct_answer.items()
-                                ][0] if not is_correct else "None",
-                                'a': possible_answers['a'],
-                                'b': possible_answers['b'],
-                                'c': possible_answers['c'],
-                                'd': possible_answers['d']
-                            })
+                            tell_given_answer,
+                            tell_correct_answer,
+                            tell_next_question,
+                            tell_answer_options
                         ]
                     }
             else:
                 if self.domain.quiztype == "boolean": 
                     return {
-                        "sys_acts": [
-                            SysAct(SysActionType.TellEnd, slot_values={
-                                'quiztype': 'boolean',
-                                'given_answer': 'correct' if is_correct else 'incorrect',
-                                'correct_answer': None,
-                                'length': 'number',
-                                'score': str(self.domain.score),
-                                'count': str(self.domain.count),
-                            })
-                        ]
+                        "sys_acts": [tell_given_answer, tell_end]
                     }
                 else:
                     return {
                         "sys_acts": [
-                            SysAct(SysActionType.TellEnd, slot_values={
-                                'quiztype': 'multiple',
-                                'given_answer': 'correct' if is_correct else 'incorrect',
-                                'length': 'number',
-                                'correct_answer': [
-                                    f'{key.capitalize()}) {value}' for key, value in prev_correct_answer.items()
-                                ][0] if not is_correct else "None",
-                                'score': str(self.domain.score),
-                                'count': str(self.domain.count),
-                            })
+                            tell_given_answer,
+                            tell_correct_answer,
+                            tell_end
                         ]
                     }
 

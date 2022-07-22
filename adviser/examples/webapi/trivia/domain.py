@@ -40,7 +40,7 @@ class TriviaDomain(LookupDomain):
 
     def __init__(self):
         LookupDomain.__init__(self, 'Trivia', 'Trivia')
-        self.count = -1
+        self.count = 0
         self.score = 0
         self.correct_answer = None
         self.incorrect_answers = {}
@@ -56,7 +56,7 @@ class TriviaDomain(LookupDomain):
         if self.quiztype == 'multiple':
             question = f"{question}?" if not question.endswith('?') else question
         else:
-            question = f"{question}." if not question.endswith('.') else question
+            question = f"{question}" if not question.endswith('.') else question
         return question
 
     def find_entities(
@@ -106,9 +106,7 @@ class TriviaDomain(LookupDomain):
 
         self.question = self._format_question(trivia_instance['results'][0]['question'])
         self.previous_questions.append(self.question)
-        
-        self.count += 1
-        
+                
         return [{
             'artificial_id': 1, 'level': self.level, 'quiztype': self.quiztype,
             'category': self.category, 'length': self.length
@@ -123,7 +121,7 @@ class TriviaDomain(LookupDomain):
         return [result]
 
     def get_requestable_slots(self) -> List[str]:
-        return ['True', 'False', 'a', 'b', 'c', 'd']
+        return ['True', 'False', 'a', 'b', 'c', 'd', 'score']
 
     def get_system_requestable_slots(self) -> List[str]:
         return ['answer', 'score', 'count']
