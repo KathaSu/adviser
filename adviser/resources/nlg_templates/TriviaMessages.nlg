@@ -20,7 +20,7 @@ template tell_question(question, given_answer, quiztype, length, correct_answer,
 	if quiztype = "multiple" & length = "number": "Your answer was {given_answer}. The correct answer was {correct_answer}. Here is the next question: {question} Answer options are: A) {a}, B) {b}, C) {c} or D) {d}."
 
 template tell_end(quiztype, given_answer, length, correct_answer, count, score)
-	if quiztype = "boolean" & length = "infinity": "You answered {count} statements correctly. Thank you for playing. Bye!"
+	if quiztype = "boolean" & length = "infinity": "You answered {count} statements right. Thank you for playing. Bye!"
 	if quiztype = "boolean" & length = "number": "You answered {score} out of {count} statements correctly. Thank you for playing. Bye!"
 	if quiztype = "multiple" & length = "infinity": "You got {count} questions right. Thank you for playing. Bye!"
 	if quiztype = "multiple" & length = "number" & correct_answer = "None" : "Your answer was {given_answer}. You got {score} out of {count} questions right. Thank you for playing. Bye!"
