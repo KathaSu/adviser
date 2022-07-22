@@ -21,7 +21,7 @@ template tell_end(given_answer, count, score)
 	"Your answer was {given_answer}. You got {score} out of {count} questions right. Thank you for playing. Bye!"
 
 template customize(slot)
-	if slot = "level": "Which level of difficulty do you want to play? Easy, medium, hard or any level."
+	if slot = "level": "Which level of difficulty do you want to play? Easy, medium or hard."
 	if slot = "quiztype": "What type of quiz do you want to play? Multiple Choice or True/False."
-	if slot = "category": "From what category do you want questions? General knowledge, Entertainment, Society, Science or any category."
-	if slot = "length": "How many questions do you want to answer? 5, 10, 15 or 20 or infinity, where you can play until you get the first wrong answer."
+	if slot = "category": "Do you want questions about General knowledge, Entertainment, Society, Science, or a mixture of all of them?"
+	if slot = "length": "How many questions do you want to answer? 5, 10, 15, 20 or infinity (play until you get the first wrong answer)?"
