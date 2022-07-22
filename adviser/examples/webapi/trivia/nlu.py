@@ -32,6 +32,13 @@ class TriviaNLU(HandcraftedNLU):
             user_utterance = user_utterance.strip()
             self._match_general_act(user_utterance)
             self._match_domain_specific_act(user_utterance)
-        
+
+            if len(self.user_acts) == 0:
+                self.user_acts.append(
+                    UserAct(
+                        text=user_utterance if user_utterance else "",
+                        act_type=UserActionType.Bad
+                    )
+                )
         self.logger.dialog_turn("User Actions: %s" % str(self.user_acts))
         return {'user_acts': self.user_acts}
