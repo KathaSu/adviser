@@ -4,5 +4,6 @@
     "a": "(^A$)",
     "b": "(^B$)",
     "c": "(^C$)",
-    "d": "(^D$)"
+    "d": "(^D$)",
+    "score": "(what(')?(s)? my score|what is my (current) score|score)"
 }

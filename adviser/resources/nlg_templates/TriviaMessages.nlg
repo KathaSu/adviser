@@ -1,7 +1,7 @@
 template welcomemsg(): "Welcome to the Trivia chat bot. Do you want to customize the quiz?"
 template welcomemsg(help): "Sorry, I cannot understand you. Please tell me again what you are looking for."
 template welcomemsg(more) : "Can I help you with anything else?"
-template bad() : "Sorry I am a bit confused; please tell me again what you are looking for."
+template bad() : "Sorry - I don't understand you. Please repeat."
 # repeat() : "Could you please repeat that?"
 template closingmsg() : "Thank you, goodbye."
 

@@ -13,7 +13,7 @@
     },
     "quiztype": {
         "multiple": "(Multiple Choice|MC|Multiple)",
-        "boolean": "(True(/)False|Statements)"
+        "boolean": "(True(/)False|True False|Statements)"
     },
     "length": {
         "5": "(5)",
