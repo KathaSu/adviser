@@ -8,6 +8,7 @@ from utils import SysAct
 
 
 class TriviaBST(Service):
+    """ Adapted belief state tracker. """
 
     def __init__(self, domain=None, logger=None):
         Service.__init__(self, domain=domain)
@@ -21,6 +22,8 @@ class TriviaBST(Service):
     ) -> dict(beliefstate=BeliefState):
         self.bs.start_new_turn()
         if user_acts:
+            # add the user acts, that were defined in the NLU, to the 
+            # beliefstate for later use
             self._reset_informs(user_acts)
             self._reset_requests()
             self.bs["user_acts"] = self._get_all_usr_action_types(user_acts)
@@ -29,18 +32,22 @@ class TriviaBST(Service):
         return {'beliefstate': self.bs}
 
     def dialog_start(self):
+        # initiate a new belief state
         self.bs = BeliefState(self.domain)
 
     def _reset_informs(self, acts: List[UserAct]):
+        # remove the old informables from the belief state
         slots = {act.slot for act in acts if act.type == UserActionType.Inform}
         for slot in [s for s in self.bs['informs']]:
             if slot in slots:
                 del self.bs['informs'][slot]
 
     def _reset_requests(self):
+        # remove the old requesables from the belief state
         self.bs['requests'] = {}
 
     def _get_all_usr_action_types(self, user_acts: List[UserAct]) -> Set[UserActionType]:
+        # get the user action type to add to the belief state
         action_type_set = set()
         for act in user_acts:
             action_type_set.add(act.type)

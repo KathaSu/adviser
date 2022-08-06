@@ -26,19 +26,21 @@ from typing import List, Iterable
 from utils.domain.lookupdomain import LookupDomain
 from urllib.request import urlopen
 
+# match our defined categories to the categories of the webapi
 categories = {
     'general': [9],
     'entertainment': [10,11,12,13,14,15,16,26,29,31,32],
     'science': [17,18,19,27,30],
     'society': [20,21,22,23,24,25,28]
 }
-
+# define letters to use for multiple choice
 multiple_choices = ['a', 'b', 'c', 'd']
 
 class TriviaDomain(LookupDomain):
     """Domain for the Trivia API"""
 
     def __init__(self):
+        # initate domain with variables relevant for the domain
         LookupDomain.__init__(self, 'Trivia', 'Trivia')
         self.count = 0
         self.score = 0
@@ -52,6 +54,8 @@ class TriviaDomain(LookupDomain):
         self.previous_questions = []
 
     def _format_question(self, question):
+        # format question to adress issues with encoding and inconsitent use of 
+        # dots and question marks.
         question = html.unescape(question)
         if self.quiztype == 'multiple':
             question = f"{question}?" if not question.endswith('?') else question
@@ -73,6 +77,8 @@ class TriviaDomain(LookupDomain):
         self.length = constraints['length'] \
             if 'length' in constraints else self.length
 
+        # check if retived question has already been used in this quiz round 
+        # before. Get questions until a new question appears. 
         while True:
             trivia_instance = self._query(
                 level = self.level,
@@ -82,29 +88,32 @@ class TriviaDomain(LookupDomain):
             if trivia_instance['results'][0]['question'] not in self.previous_questions:
                 break
 
+        
         if trivia_instance is None:
             return []
+        # define correct answer for quiztype boolean
         if self.quiztype == 'boolean':
             self.correct_answer = True \
                 if trivia_instance['results'][0]['correct_answer'] == "True" \
                     else False
+        # define the correct and incorrect answers for quiztype multiple choice
         elif self.quiztype == 'multiple':
             self.correct_answer = {
                 random.choice(multiple_choices) : \
                     trivia_instance['results'][0]['correct_answer']
             }
-            iteration = 0
-            self.incorrect_answers = {}
+            i, self.incorrect_answers = 0, {}
             for multiple_choice in multiple_choices:
                 if multiple_choice not in self.correct_answer:
                     self.incorrect_answers.update(
                         {
-                            multiple_choice : trivia_instance['results'][0]['incorrect_answers'][iteration]
+                            multiple_choice : trivia_instance['results'][0]['incorrect_answers'][i]
                         }
                     )
-                    iteration += 1
+                    i += 1
 
         self.question = self._format_question(trivia_instance['results'][0]['question'])
+        # add the current question to the list of previous questions
         self.previous_questions.append(self.question)
                 
         return [{
@@ -143,6 +152,7 @@ class TriviaDomain(LookupDomain):
         return 'artificial_id'
 
     def _query(self, level, quiztype, category):
+        # get a question from the webapi with the defined informables
         level = f'&difficulty={level}' if level != 'anyLevel' else ''
         category = f'&category={random.choice(categories[category])}' if category != 'anyCategory' else ''
         url = f'https://opentdb.com/api.php?amount=1&type={quiztype}{level}{category}'

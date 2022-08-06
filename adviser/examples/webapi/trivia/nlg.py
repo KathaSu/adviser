@@ -32,9 +32,9 @@ from typing import Dict, List
 
 
 class TriviaNLG(HandcraftedNLG):
-    """Extension of the handcrafted NLG by allowing multiple system acts.
+    """
+    Adaption of the handcrafted NLG to allow a list of multiple system acts. 
 
-    This change is necessary for QA, since the policy publishes multiple system acts.
     """
     def __init__(
         self,
@@ -52,6 +52,8 @@ class TriviaNLG(HandcraftedNLG):
     def publish_system_utterance(
         self, sys_acts: List[SysAct] = None
     ) -> dict(sys_utterance=str):
+        # combine multiple SysActs by combining the system utterances with a 
+        # space
         message = ' '.join(
             [self.generate_system_utterance(sys_act) for sys_act in sys_acts]
         )

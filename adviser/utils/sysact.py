@@ -36,6 +36,7 @@ class SysActionType(Enum):
     Bad = 'bad'
     Bye = 'closingmsg'
     ConfirmRequest = 'confreq'
+    # new SysActs for the trivia domain.
     TellNextQuestion = 'tell_next_question'
     TellFirstQuestion = 'tell_first_question'
     Customize = 'customize'

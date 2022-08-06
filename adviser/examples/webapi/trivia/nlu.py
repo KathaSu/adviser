@@ -12,6 +12,8 @@ from services.nlu import HandcraftedNLU
 
 
 class TriviaNLU(HandcraftedNLU):
+    """Adapted handcrafted NLU for the trivia domain. """
+
     def __init__(self, domain: LookupDomain, logger: DiasysLogger = DiasysLogger()):
         HandcraftedNLU.__init__(self, domain, logger)
 
@@ -30,9 +32,16 @@ class TriviaNLU(HandcraftedNLU):
             return {'user_acts': None}
         else:
             user_utterance = user_utterance.strip()
+            # match the user utterance to a general act (like CONFIRM or DENY)
+            # and add it to user_acts
             self._match_general_act(user_utterance)
+            # match the user utterance to a domain spectific (like INFORM about
+            # the answer to a question)
             self._match_domain_specific_act(user_utterance)
 
+            # if the user utterance could not be matched to a general or domain
+            # specific act, the user act Bad is selected and the user has to 
+            # repeat the previous answer
             if len(self.user_acts) == 0:
                 self.user_acts.append(
                     UserAct(
